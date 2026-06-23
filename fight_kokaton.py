@@ -66,7 +66,7 @@ class Bird:
         self.img = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, 0.9)
         screen.blit(self.img, self.rct)
 
-    def update(self, key_lst: list[bool], screen: pg.Surface):
+    def update(self, key_lst: list[bool], screen: pg.Surface,speed:"Speed"):
         """
         押下キーに応じてこうかとんを移動させる
         引数1 key_lst：押下キーの真理値リスト
@@ -75,15 +75,28 @@ class Bird:
         sum_mv = [0, 0]
         for k, mv in __class__.delta.items():
             if key_lst[k]:
-                sum_mv[0] += mv[0]
-                sum_mv[1] += mv[1]
+                sum_mv[0] += mv[0]*speed.current
+                sum_mv[1] += mv[1]*speed.current
         self.rct.move_ip(sum_mv)
         if check_bound(self.rct) != (True, True):
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
-            self.img = __class__.imgs[tuple(sum_mv)]
+            dx = 5 if sum_mv[0] > 0 else -5 if sum_mv[0] < 0 else 0
+            dy = 5 if sum_mv[1] > 0 else -5 if sum_mv[1] < 0 else 0
+            self.img = __class__.imgs[(dx, dy)]
         screen.blit(self.img, self.rct)
 
+class Speed:
+    def __init__(self):
+        self.normal = 1.0      # 通常速度
+        self.boost = 5.0       # 加速時の倍率
+        self.current = 1.0     # 現在の倍率
+
+    def update(self, key_lst):
+        if key_lst[pg.K_s]:
+            self.current = self.boost
+        else:
+            self.current = self.normal
 
 class Beam:
     """
@@ -166,6 +179,8 @@ def main():
 
     score=Score()
 
+    speed = Speed()
+
     bombs =[Bomb((255, 0, 0), 10)for _ in range(NUM_OF_BOMBS)]
 
     beam = None  # ゲーム初期化時にはビームは存在しない
@@ -204,14 +219,15 @@ def main():
         beams = [beam for beam in beams if beam is not None]
 
         key_lst = pg.key.get_pressed()
-        bird.update(key_lst, screen)
+        speed.update(key_lst)
+        bird.update(key_lst, screen,speed)
         for beam in beams:
             beam.update(screen)
         for bomb in bombs:
             bomb.update(screen)
-
         beams = [beam for beam in beams if check_bound(beam.rct) == (True, True)]
         score.update(screen)
+
         pg.display.update()
         tmr += 1
         clock.tick(50)
