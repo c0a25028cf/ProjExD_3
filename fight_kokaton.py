@@ -87,10 +87,16 @@ class Bird:
         screen.blit(self.img, self.rct)
 
 class Speed:
+    """
+    Sキーを押すとこうかとんを5倍速させる。
+    normal 通常スピード
+    boost 加速スピード
+    current 現在のスピード
+    """
     def __init__(self):
-        self.normal = 1.0      # 通常速度
-        self.boost = 5.0       # 加速時の倍率
-        self.current = 1.0     # 現在の倍率
+        self.normal = 1.0     
+        self.boost = 5.0 
+        self.current = 1.0  
 
     def update(self, key_lst):
         if key_lst[pg.K_s]:
